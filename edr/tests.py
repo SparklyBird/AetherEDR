@@ -737,6 +737,21 @@ class IngestKeyTests(TestCase):
         self.assertEqual(self.c.get("/api/system/", **self.op).json()["ingest_key"], settings.INGEST_KEY)
 
 
+class LauncherFirstRunTests(unittest.TestCase):
+    def test_missing_packages_give_instructions_not_a_traceback(self):
+        import contextlib
+        import io
+        from unittest import mock
+
+        from aether import launcher
+
+        out = io.StringIO()
+        with mock.patch.dict(sys.modules, {"django": None}), contextlib.redirect_stdout(out):
+            code = launcher.main(["--no-browser", "--port", "0"])
+        self.assertEqual(code, 1)
+        self.assertIn("pip install -r requirements.txt", out.getvalue())
+
+
 class ShutdownTests(TestCase):
     """The Exit button: operator key and confirmation needed, and only when the launcher can stop the program."""
 

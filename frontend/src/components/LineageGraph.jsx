@@ -7,7 +7,7 @@ import { buildTree, collapsibleIds, isFlagged, isLineageHit } from "../lib/layou
 import { arr, load, save, saveBlob } from "../lib/safe";
 import { setSetting, useSettings } from "../lib/settings";
 import { toast } from "../lib/toast";
-import KeysCard, { KEYS_CARD_SPACE } from "./KeysCard";
+import KeysCard, { KEYS_CARD_HEIGHT, KEYS_CARD_SPACE, KEYS_MIN_PANE } from "./KeysCard";
 import { Button, Empty, ErrorPanel, Input, Popover, Segmented, Select, Spinner, Switch } from "./ui";
 
 const DX = 250;
@@ -41,6 +41,8 @@ export default function LineageGraph({ host, selectedId, onSelect, focusId, onFo
   const [size, setSize] = useState({ w: 800, h: 500 });
   const [hover, setHover] = useState(null);
   const [keysOpen, setKeysOpen] = useState(() => load("aether.keys.open", true) !== false);
+  const roomForKeys = size.w >= KEYS_MIN_PANE; // in a narrow pane (the dossier is open, say) the card would only crowd the graph
+  const keysShown = keysOpen && roomForKeys;
   const setKeys = (open) => {
     setKeysOpen(open);
     save("aether.keys.open", open);
@@ -72,6 +74,13 @@ export default function LineageGraph({ host, selectedId, onSelect, focusId, onFo
   useEffect(() => {
     if (data && data.count === 0 && scope === "flagged" && !autoAll && focusId == null) setAutoAll(true);
   }, [data, scope, autoAll, focusId]);
+  // The first poll can come back empty, on a fresh start before anything is scored. Once a later poll shows flagged
+  // processes, return to the flagged view. An exited parent that still has a score is only drawn as an ancestor
+  // (the server does not seed from it unless exited processes are shown), so it does not count here.
+  useEffect(() => {
+    if (!autoAll || scope !== "flagged" || focusId != null || !data) return;
+    if (arr(data.nodes).some((n) => n.risk > 0 && (n.alive || s.showExited))) setAutoAll(false);
+  }, [data, autoAll, scope, focusId, s.showExited]);
 
   const rawNodes = useMemo(() => arr(data?.nodes), [data]);
   const layout = useMemo(
@@ -107,29 +116,42 @@ export default function LineageGraph({ host, selectedId, onSelect, focusId, onFo
   }, []);
 
   /* ---- camera ---- */
+  const keysTop = topH + (autoAll && scope === "flagged" && layout.nodes.length > 0 ? 34 : 12);
   const fit = useCallback(() => {
     const el = wrap.current;
     if (!el || !layout.nodes.length) return;
     const { x0, y0, x1, y1 } = frame;
     const w = el.clientWidth;
     const h = el.clientHeight;
-    const padL = keysOpen && window.innerWidth >= 768 ? KEYS_CARD_SPACE : 24; // the keys card sits top left
     const padR = 24;
     const padTop = topH + 28; // clear of the toolbar and ruler
     const padBot = layout.nodes.length > 8 ? 132 : 24; // the minimap sits bottom right
-    const kFit = Math.min(1.25, (w - padL - padR) / Math.max(1, x1 - x0), (h - padTop - padBot) / Math.max(1, y1 - y0));
-    const k = clampK(kFit);
-    const spare = w - padL - padR - (x1 - x0) * k;
-    setView({ k, x: padL - x0 * k + Math.max(0, spare) / 2, y: padTop - y0 * k + Math.max(0, h - padTop - padBot - (y1 - y0) * k) / 2 });
-  }, [layout, frame, topH, keysOpen]);
+    const place = (padL) => {
+      const kFit = Math.min(1.25, (w - padL - padR) / Math.max(1, x1 - x0), (h - padTop - padBot) / Math.max(1, y1 - y0));
+      const k = clampK(kFit);
+      const spare = w - padL - padR - (x1 - x0) * k;
+      return { k, x: padL - x0 * k + Math.max(0, spare) / 2, y: padTop - y0 * k + Math.max(0, h - padTop - padBot - (y1 - y0) * k) / 2 };
+    };
+    let v = place(24);
+    if (keysOpen && w >= KEYS_MIN_PANE && window.innerWidth >= 768) {
+      // the keys card sits top left: keep that strip clear only when the graph would actually run into it
+      const hits = layout.nodes.some((n) => {
+        const sx = v.x + n.x * v.k;
+        const sy = v.y + n.y * v.k;
+        return sx < KEYS_CARD_SPACE && sy > keysTop - 16 && sy < keysTop + KEYS_CARD_HEIGHT + 16;
+      });
+      if (hits) v = place(KEYS_CARD_SPACE);
+    }
+    setView(v);
+  }, [layout, frame, topH, keysOpen, keysTop]);
 
   // opening or closing the keys card re-frames, unless the user has already moved the view
-  const keysSeen = useRef(keysOpen);
+  const keysSeen = useRef(keysShown);
   useLayoutEffect(() => {
-    if (keysSeen.current === keysOpen) return;
-    keysSeen.current = keysOpen;
+    if (keysSeen.current === keysShown) return;
+    keysSeen.current = keysShown;
     if (!moved.current) fit();
-  }, [keysOpen, fit]);
+  }, [keysShown, fit]);
 
   // auto-frame only until the user pans or zooms (or host/scope/focus changes). After that a refresh
   // keeps what they are looking at in the same screen position, even if the layout shifts
@@ -632,7 +654,9 @@ export default function LineageGraph({ host, selectedId, onSelect, focusId, onFo
         </dl>
       </details>
 
-      <KeysCard open={keysOpen} onOpen={() => setKeys(true)} onClose={() => setKeys(false)} top={topH + (autoAll && scope === "flagged" && layout.nodes.length > 0 ? 34 : 12)} />
+      {roomForKeys && (
+        <KeysCard open={keysOpen} onOpen={() => setKeys(true)} onClose={() => setKeys(false)} top={keysTop} />
+      )}
 
       {/* minimap */}
       {layout.nodes.length > 8 && (

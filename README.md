@@ -3,10 +3,28 @@
 A standalone endpoint detection and response platform. One process runs the telemetry collector, the detection engine, the REST API, the embedded SQLite database and the web console. No Docker, no external database, no osquery, Sysmon or Falco.
 
 ```
-python run.py          # migrates the DB, starts the collector, serves the console, opens your browser
+AetherEDR.bat          # Windows: sets everything up, starts the collector, serves the console, opens your browser
 ```
 
+On Linux and macOS, or to run it by hand, install the requirements first: see [Quick start](#quick-start). A plain `python run.py` only works after that.
+
 Run it as **root / Administrator** for full memory visibility. Without elevation it only sees processes you own.
+
+## Screenshots
+
+Taken with the built-in demo data (`AetherEDR.bat demo`), so nothing here comes from a real machine.
+
+![Incident log, lineage graph and the process dossier with its findings](docs/images/console.png)
+
+*Incident log on the left, process lineage in the middle, and the findings behind one process on the right. Here a Word document starts cmd.exe, which starts PowerShell with code mapped in unbacked memory.*
+
+![A focused lineage chain from System to PowerShell](docs/images/lineage.png)
+
+*The lineage of one process, with the keys card at the top left.*
+
+![The rule catalogue with weights, techniques and alert counts](docs/images/rules.png)
+
+*Every rule with its weight, ATT&CK technique and how many alerts it raised. Rules can be muted from here.*
 
 ## Quick start
 

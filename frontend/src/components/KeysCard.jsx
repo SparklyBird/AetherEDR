@@ -2,6 +2,10 @@ import { Kbd } from "./ui";
 
 // Width of the open card plus its margin, so the graph can leave that strip clear when it fits itself.
 export const KEYS_CARD_SPACE = 16 + 264 + 12;
+export const KEYS_CARD_HEIGHT = 250;
+
+// The card only shows when the graph pane is at least this wide. Beside an open dossier the pane is narrower and the graph needs the room.
+export const KEYS_MIN_PANE = 960;
 
 const ROWS = [
   [["Ctrl", "K"], "Search or run commands"],

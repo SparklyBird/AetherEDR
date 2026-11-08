@@ -187,7 +187,16 @@ def main(argv: list[str] | None = None) -> int:
             agent.stop()
         return 0
 
-    import django
+    try:
+        import django
+    except ModuleNotFoundError:
+        # the usual first-run mistake: a plain `python run.py` with the system Python, before any install
+        activate = r".venv\Scripts\activate" if os.name == "nt" else ". .venv/bin/activate"
+        print("\n  The required packages are not installed for this Python.")
+        if os.name == "nt":
+            print("\n  Easiest on Windows: double-click AetherEDR.bat. It sets everything up.")
+        print(f"\n  By hand:\n    python -m venv .venv\n    {activate}\n    pip install -r requirements.txt\n    python run.py")
+        return 1
 
     django.setup()
     from django.conf import settings
