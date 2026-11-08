@@ -1,0 +1,242 @@
+@import "tailwindcss";
+@import "@fontsource/b612/400.css";
+@import "@fontsource/b612/400-italic.css";
+@import "@fontsource/b612/700.css";
+@import "@fontsource/ibm-plex-mono/400.css";
+@import "@fontsource/ibm-plex-mono/600.css";
+
+/* Look: an engineering drawing. Linework on a sheet, and the only colour is severity (red, orange, yellow, blue). */
+@theme inline {
+  --font-sans: "B612", ui-sans-serif, system-ui, sans-serif;
+  --font-mono: "IBM Plex Mono", ui-monospace, Consolas, monospace;
+
+  --color-sheet: var(--sheet);
+  --color-plate: var(--plate);
+  --color-plate2: var(--plate2);
+  --color-rule: var(--rule);
+  --color-rule2: var(--rule2);
+  --color-ink: var(--ink);
+  --color-pencil: var(--pencil);
+  --color-graphite: var(--graphite);
+  --color-redline: var(--redline);
+  --color-marker: var(--marker);
+  --color-highlight: var(--highlight);
+  --color-chalk: var(--chalk);
+  --color-ok: var(--ok);
+
+  --radius-xs: 2px;
+  --radius-sm: 3px;
+  --radius-md: 4px;
+  --radius-lg: 6px;
+}
+
+:root,
+:root[data-theme="cyanotype"] {
+  color-scheme: dark;
+  --sheet: #0b2338;
+  --plate: #0e2c46;
+  --plate2: #133a5c;
+  --rule: #24516f;
+  --rule2: #3b7396;
+  --ink: #e9f3f8;
+  --pencil: #a9c6d8;
+  --graphite: #8bb0c8;
+  --redline: #ff7a66;
+  --marker: #ffa84a;
+  --highlight: #f3de62;
+  --chalk: #8fdcf0;
+  --ok: #62e0a4;
+}
+:root[data-theme="graphite"] {
+  color-scheme: dark;
+  --sheet: #131517;
+  --plate: #1a1d20;
+  --plate2: #23272b;
+  --rule: #31363b;
+  --rule2: #4d555c;
+  --ink: #eceff1;
+  --pencil: #aab2b8;
+  --graphite: #9aa3aa;
+  --redline: #ff6552;
+  --marker: #ffa84a;
+  --highlight: #f3de62;
+  --chalk: #8fdcf0;
+  --ok: #62e0a4;
+}
+:root[data-theme="vellum"] {
+  color-scheme: light;
+  --sheet: #eef2f4;
+  --plate: #e3e9ed;
+  --plate2: #d6dfe5;
+  --rule: #c0ccd4;
+  --rule2: #8196a4;
+  --ink: #0d2336;
+  --pencil: #2f4858;
+  --graphite: #3b5565;
+  --redline: #b52618;
+  --marker: #9a4504;
+  --highlight: #775c00;
+  --chalk: #0b6f8c;
+  --ok: #11764b;
+}
+
+:root {
+  --ui-scale: 1;
+  --pad: 0.75rem;     /* ledger row padding, set by density */
+  --gap-row: 40;      /* graph row spacing in px, set by density */
+}
+:root[data-density="compact"] {
+  --pad: 0.4rem;
+  --gap-row: 30;
+}
+:root[data-size="large"] {
+  --ui-scale: 1.12;
+}
+:root[data-size="small"] {
+  --ui-scale: 0.92;
+}
+
+html {
+  font-size: calc(16px * var(--ui-scale));
+}
+html,
+body,
+#root {
+  height: 100%;
+}
+body {
+  margin: 0;
+  background: var(--sheet);
+  color: var(--ink);
+  font-family: var(--font-sans);
+  font-size: 0.875rem;
+  line-height: 1.45;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+::selection {
+  background: color-mix(in srgb, var(--chalk) 35%, transparent);
+}
+* {
+  scrollbar-width: thin;
+  scrollbar-color: var(--rule2) transparent;
+}
+/* in the base layer so Tailwind utilities (text-xs, text-sheet) can still override these */
+@layer base {
+  :focus-visible {
+    outline: 2px solid var(--chalk);
+    outline-offset: 2px;
+    border-radius: 3px;
+  }
+  button {
+    font: inherit;
+    color: inherit;
+  }
+  input,
+  select,
+  textarea {
+    font: inherit;
+    color: inherit;
+  }
+}
+
+.tabular {
+  font-variant-numeric: tabular-nums;
+}
+
+/* grid behind the lineage, inside the SVG so it pans and zooms with the tree */
+.sheet-canvas {
+  background: var(--sheet);
+}
+
+/* italic red note, the only italic text in the UI */
+.note {
+  font-style: italic;
+  color: var(--redline);
+}
+
+/* draws the line in once, used for unexpected launch paths */
+@keyframes ink-in {
+  from {
+    stroke-dashoffset: var(--len, 300);
+  }
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+.hot-edge {
+  stroke-dasharray: var(--len, 300);
+  animation: ink-in 1s cubic-bezier(0.3, 0.6, 0.2, 1) 0.2s both;
+}
+
+/* new alerts get underlined once, then settle */
+@keyframes arrive {
+  from {
+    background-color: color-mix(in srgb, var(--marker) 26%, transparent);
+  }
+  to {
+    background-color: transparent;
+  }
+}
+.arrive {
+  animation: arrive 2.6s ease-out both;
+}
+
+@keyframes drawer-in {
+  from {
+    transform: translateX(14px);
+    opacity: 0;
+  }
+  to {
+    transform: none;
+    opacity: 1;
+  }
+}
+.drawer-in {
+  animation: drawer-in 0.16s ease-out both;
+}
+@keyframes pop-in {
+  from {
+    transform: translateY(-4px);
+    opacity: 0;
+  }
+  to {
+    transform: none;
+    opacity: 1;
+  }
+}
+.pop-in {
+  animation: pop-in 0.12s ease-out both;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hot-edge,
+  .arrive,
+  .drawer-in,
+  .pop-in {
+    animation: none;
+    stroke-dasharray: none;
+  }
+}
+:root[data-motion="off"] .hot-edge,
+:root[data-motion="off"] .arrive,
+:root[data-motion="off"] .drawer-in,
+:root[data-motion="off"] .pop-in {
+  animation: none;
+  stroke-dasharray: none;
+}
+
+/* highlight behind a word, for tags like "memory flagged" */
+.hl {
+  background: linear-gradient(transparent 12%, color-mix(in srgb, var(--highlight) 30%, transparent) 12% 88%, transparent 88%);
+  color: var(--ink);
+  padding: 0 0.2em;
+}
+:root[data-theme="vellum"] .hl {
+  background: linear-gradient(transparent 12%, color-mix(in srgb, #f0d23c 62%, transparent) 12% 88%, transparent 88%);
+}
+
+dialog::backdrop {
+  background: rgb(4 12 20 / 0.6);
+}

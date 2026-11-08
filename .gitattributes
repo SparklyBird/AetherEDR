@@ -1,0 +1,13 @@
+# keep the repository in LF, so files do not show as changed between Windows and Linux
+* text=auto eol=lf
+
+# Windows batch files need CRLF
+*.bat text eol=crlf
+*.cmd text eol=crlf
+
+# never touch binary files
+*.woff binary
+*.woff2 binary
+*.png binary
+*.ico binary
+*.pdf binary

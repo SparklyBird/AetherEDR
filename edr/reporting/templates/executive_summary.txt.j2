@@ -1,0 +1,22 @@
+{#- Narrative blocks, rendered once per report. Paragraphs are separated by a blank line. -#}
+{% if s.total_alerts == 0 -%}
+During the {{ window }} ending {{ generated }}, AetherEDR monitored {{ s.hosts }} endpoint{{ "s" if s.hosts != 1 }} and {{ s.processes_seen }} process{{ "es" if s.processes_seen != 1 }}. No alerts were raised.
+{%- else -%}
+During the {{ window }} ending {{ generated }}, AetherEDR monitored {{ s.hosts }} endpoint{{ "s" if s.hosts != 1 }} and observed {{ s.processes_seen }} process{{ "es" if s.processes_seen != 1 }}. It raised {{ s.total_alerts }} alert{{ "s" if s.total_alerts != 1 }}: {{ s.critical }} critical, {{ s.high }} high, {{ s.medium }} medium and {{ s.low }} low severity. {{ s.open_alerts }} remain open.
+{%- endif %}
+
+{% if s.critical or s.high -%}
+Overall posture: ATTENTION REQUIRED. {{ s.critical + s.high }} high-impact finding{{ "s" if s.critical + s.high != 1 }} should be triaged before anything else{% if top_hosts %}; most are concentrated on {{ top_hosts | join(", ") }}{% endif %}.
+{%- elif s.medium -%}
+Overall posture: ELEVATED. No critical or high severity detections, but {{ s.medium }} medium finding{{ "s" if s.medium != 1 }} warrant review.
+{%- else -%}
+Overall posture: NORMAL. No findings above low severity.
+{%- endif %}
+
+{% if s.memory_alerts -%}
+{{ s.memory_alerts }} alert{{ "s" if s.memory_alerts != 1 }} involve{{ "s" if s.memory_alerts == 1 }} in-memory indicators (executable memory with no backing file, RWX regions or reflectively loaded images), which are common in code-injection and fileless attacks and are not visible to file-based antivirus.
+{%- endif %}
+{% if s.yara_matches %}
+{{ s.yara_matches }} process{{ "es" if s.yara_matches != 1 }} matched YARA signatures during memory scans.
+{%- endif %}
+{#- end -#}

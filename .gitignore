@@ -1,0 +1,14 @@
+# python
+.venv/
+__pycache__/
+*.pyc
+*.egg-info/
+.pytest_cache/
+
+# runtime data: database, API key, secret key
+/data/
+
+# build output (frontend/dist is committed on purpose, see README)
+/build/
+/dist/
+frontend/node_modules/

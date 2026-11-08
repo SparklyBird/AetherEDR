@@ -1,0 +1,17 @@
+{%- if a.rule_id.startswith("LIN-001") -%}
+Block Office applications from creating child processes (Attack Surface Reduction rule or AppLocker/WDAC policy). Review the originating document and its delivery channel.
+{%- elif a.rule_id.startswith("LIN-003") -%}
+Inspect the web root for recently modified or unknown scripts, rotate any credentials reachable by the web server account, and patch the application.
+{%- elif a.rule_id in ("EXE-003", "MEM-002") -%}
+Treat as likely compromise. Preserve a memory capture, isolate the host and identify how the payload was delivered.
+{%- elif a.rule_id.startswith("MEM-") -%}
+Run a YARA scan of the process, compare with a known-good host, and confirm the process is not a legitimate JIT/runtime host before escalating.
+{%- elif a.rule_id.startswith("NET-") -%}
+Review the destination with the network team, block it at the egress firewall if unexpected, and identify what started the process.
+{%- elif a.rule_id.startswith("CMD-") -%}
+Collect the full command line and parent chain, identify the user session, and hunt for the same pattern on other endpoints.
+{%- elif a.rule_id.startswith("YARA") -%}
+Confirm the match is not a security tool or test fixture; if genuine, isolate the host and capture the process memory.
+{%- else -%}
+Review the process lineage, binary signature and network activity, then close as benign or escalate.
+{%- endif -%}

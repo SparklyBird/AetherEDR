@@ -1,0 +1,3 @@
+# Optional: in-memory YARA scanning. Prebuilt wheels exist for Python 3.9-3.13 (Windows/Linux/macOS).
+# On Python 3.14 pip must compile it: Windows needs the Microsoft C++ Build Tools.
+yara-python>=4.5
