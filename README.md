@@ -1,5 +1,7 @@
 # AetherEDR
 
+[![CI](https://github.com/SparklyBird/AetherEDR/actions/workflows/ci.yml/badge.svg)](https://github.com/SparklyBird/AetherEDR/actions/workflows/ci.yml)
+
 A standalone endpoint detection and response platform. One process runs the telemetry collector, the detection engine, the REST API, the embedded SQLite database and the web console. No Docker, no external database, no osquery, Sysmon or Falco.
 
 ```
