@@ -1039,7 +1039,9 @@ class LiveCollectorTests(TransactionTestCase):
             "m.write(b'AETHEREDR_YARA_SELFTEST_MARKER_7f3a');time.sleep(60)"])
         try:
             time.sleep(1.0)
-            col = Collector(initial_spread=0.0, memscan_delays=(0.0,), memscan_period=1.0)
+            # No per-poll cap: on a busy machine (a CI runner has hundreds of processes) the cap of 25 scans per
+            # poll would reach the new fixture process only after the others
+            col = Collector(initial_spread=0.0, memscan_delays=(0.0,), memscan_period=1.0, memscan_per_poll=100_000)
             with mock.patch("edr.engine.jobs.submit_auto"):
                 pipeline.ingest(col.poll())
                 pipeline.ingest(col.poll())
